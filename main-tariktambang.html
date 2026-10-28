@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Tarik Tambang SPLDV - SMK TKJ</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+  body {
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    min-height: 100vh;
+    color: #fff;
+    padding: 20px;
+  }
+  .container { max-width: 1000px; margin: auto; }
+  h1 {
+    text-align: center;
+    font-size: 2.2em;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 6px rgba(0,0,0,0.5);
+  }
+  .subtitle {
+    text-align: center;
+    margin-bottom: 25px;
+    opacity: 0.9;
+    font-size: 1em;
+  }
+
+  /* Arena Tarik Tambang */
+  .arena {
+    background: rgba(255,255,255,0.08);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .teams {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  .team {
+    text-align: center;
+    padding: 10px 20px;
+    border-radius: 10px;
+    min-width: 150px;
+    font-weight: bold;
+  }
+  .team-kiri { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+  .team-kanan { background: linear-gradient(135deg, #27ae60, #16a085); }
+  .team.active {
+    box-shadow: 0 0 20px 5px gold;
+    transform: scale(1.05);
+    transition: all 0.3s;
+  }
+  .team h3 { font-size: 1.3em; }
+  .team .score { font-size: 2em; margin-top: 5px; }
+
+  .rope-container {
+    position: relative;
+    height: 70px;
+    background: linear-gradient(to bottom, #8b4513, #654321);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 3px solid #3e2723;
+  }
+  .rope {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: repeating-linear-gradient(90deg, #d4a574 0 10px, #b8864b 10px 20px);
+    transform: translateY(-50%);
+  }
+  .center-mark {
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 50%;
+    width: 3px;
+    background: rgba(255,255,255,0.4);
+    transform: translateX(-50%);
+  }
+  .flag {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 30px;
+    height: 40px;
+    background: gold;
+    transform: translate(-50%, -100%);
+    transition: left 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    border-radius: 3px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #333;
+  }
+  .flag::before {
+    content: '';
+    position: absolute;
+    left: -3px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: #333;
+  }
+  .win-zone {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 10%;
+    background: rgba(255,215,0,0.2);
+    border: 2px dashed gold;
+  }
+  .win-zone.left { left: 0; border-right: none; border-left: none; }
+  .win-zone.right { right: 0; border-right: none; border-left: none; }
+
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+    font-size: 0.95em;
+  }
+  .status-bar span {
+    background: rgba(0,0,0,0.3);
+    padding: 6px 14px;
+    border-radius: 20px;
+  }
+
+  /* Area Soal */
+  .question-box {
+    background: rgba(255,255,255,0.95);
+    color: #222;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  }
+  .question-box h2 {
+    color: #2a5298;
+    margin-bottom: 15px;
+    border-bottom: 3px solid #f39c12;
+    padding-bottom: 8px;
+  }
+  .question-text {
+    font-size: 1.05em;
+    line-height: 1.7;
+    margin-bottom: 15px;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 5px solid #3498db;
+  }
+  .equation {
+    font-family: 'Courier New', monospace;
+    background: #fff3cd;
+    padding: 10px;
+    border-radius: 6px;
+    margin: 8px 0;
+    font-weight: bold;
+    color: #856404;
+  }
+  .answer-area {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .answer-area label { font-weight: bold; color: #2a5298; }
+  .answer-area input {
+    flex: 1;
+    padding: 12px;
+    font-size: 1.1em;
+    border: 2px solid #3498db;
+    border-radius: 8px;
+    min-width: 200px;
+  }
+  .answer-area input:focus {
+    outline: none;
+    border-color: #f39c12;
+    box-shadow: 0 0 8px rgba(243,156,18,0.4);
+  }
+  .btn {
+    padding: 12px 28px;
+    font-size: 1.05em;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #fff;
+  }
+  .btn-submit { background: linear-gradient(135deg, #3498db, #2980b9); }
+  .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.3); }
+  .btn-restart { background: linear-gradient(135deg, #e67e22, #d35400); }
+
+  .feedback {
+    margin-top: 15px;
+    padding: 15px;
+    border-radius: 8px;
+    font-weight: bold;
+    display: none;
+  }
+  .feedback.correct { background: #d4edda; color: #155724; border: 2px solid #28a745; }
+  .feedback.wrong { background: #f8d7da; color: #721c24; border: 2px solid #dc3545; }
+
+  /* Akhir Game */
+  .game-over {
+    display: none;
+    background: rgba(255,255,255,0.95);
+    color: #222;
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  }
+  .game-over h2 { font-size: 2em; margin-bottom: 15px; }
+  .game-over .winner {
+    font-size: 1.5em;
+    color: #e67e22;
+    margin: 15px 0;
+  }
+  .game-over button { margin-top: 15px; }
+
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+  .shake { animation: shake 0.4s; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🪢 TARIK TAMBANG SPLDV 🪢</h1>
+  <p class="subtitle">Materi: Sistem Persamaan Linier Dua Variabel — SMK TKJ</p>
+
+  <div class="arena">
+    <div class="teams">
+      <div class="team team-kiri" id="teamKiri">
+        <h3>🔴 TIM KIRI</h3>
+        <div class="score" id="scoreKiri">0</div>
+      </div>
+      <div style="font-size:1.2em; opacity:0.8;">VS</div>
+      <div class="team team-kanan" id="teamKanan">
+        <h3>🟢 TIM KANAN</h3>
+        <div class="score" id="scoreKanan">0</div>
+      </div>
+    </div>
+
+    <div class="rope-container">
+      <div class="win-zone left"></div>
+      <div class="win-zone right"></div>
+      <div class="center-mark"></div>
+      <div class="rope"></div>
+      <div class="flag" id="flag">🚩</div>
+    </div>
+
+    <div class="status-bar">
+      <span>📍 Posisi Tali: <b id="posisi">0</b></span>
+      <span>🎯 Giliran: <b id="giliran">TIM KIRI</b></span>
+      <span>📝 Soal ke: <b id="soalKe">1</b>/10</span>
+    </div>
+  </div>
+
+  <div class="question-box" id="questionBox">
+    <h2 id="judulSoal">Soal untuk TIM KIRI</h2>
+    <div class="question-text" id="teksSoal"></div>
+    <div class="answer-area">
+      <label for="jawaban">Jawaban:</label>
+      <input type="number" id="jawaban" placeholder="Ketik angka saja (tanpa titik/koma)" step="any">
+      <button class="btn btn-submit" onclick="cekJawaban()">JAWAB ➤</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <div class="game-over" id="gameOver">
+    <h2 id="goTitle">🏆 PERMAINAN SELESAI 🏆</h2>
+    <div class="winner" id="goWinner"></div>
+    <div id="goDetail"></div>
+    <button class="btn btn-restart" onclick="mulaiUlang()">🔄 Main Lagi</button>
+  </div>
+</div>
+
+<script>
+// ====== BANK SOAL ======
+// 5 pasang soal. Tiap pasangan punya TOPIK SAMA, angka berbeda.
+// Variabel: x dan y. Yang ditanya salah satu variabel (jawaban tunggal).
+const soal = [
+  {
+    topik: "Harga Router & Switch",
+    kiri: {
+      cerita: "Sebuah sekolah SMK membeli <b>2 router</b> dan <b>3 switch</b> dengan total harga Rp3.500.000. Di sekolah lain dibeli <b>1 router</b> dan <b>2 switch</b> seharga Rp2.000.000.",
+      persamaan: ["2R + 3S = 3.500.000", "R + 2S = 2.000.000"],
+      tanya: "Berapakah harga <b>satu router</b> (dalam rupiah)?",
+      jawaban: 1000000
+    },
+    kanan: {
+      cerita: "Toko jaringan membeli <b>3 router</b> dan <b>2 switch</b> seharga Rp4.500.000. Pembelian lain: <b>2 router</b> dan <b>1 switch</b> seharga Rp2.500.000.",
+      persamaan: ["3R + 2S = 4.500.000", "2R + S = 2.500.000"],
+      tanya: "Berapakah harga <b>satu router</b> (dalam rupiah)?",
+      jawaban: 500000
+    }
+  },
+  {
+    topik: "Bandwidth Download & Upload",
+    kiri: {
+      cerita: "Sebuah kantor memiliki total bandwidth <b>100 Mbps</b>. Bandwidth <b>download</b> tiga kali lipat bandwidth <b>upload</b>.",
+      persamaan: ["D + U = 100", "D = 3U"],
+      tanya: "Berapa <b>bandwidth download</b> (dalam Mbps)?",
+      jawaban: 75
+    },
+    kanan: {
+      cerita: "Sebuah warnet memiliki total bandwidth <b>120 Mbps</b>. Bandwidth <b>download</b> dua kali bandwidth <b>upload</b>.",
+      persamaan: ["D + U = 120", "D = 2U"],
+      tanya: "Berapa <b>bandwidth upload</b> (dalam Mbps)?",
+      jawaban: 40
+    }
+  },
+  {
+    topik: "Jumlah Komputer & Printer di Lab",
+    kiri: {
+      cerita: "Di lab komputer terdapat <b>30 perangkat</b> (komputer + printer). Harga satu komputer Rp5.000.000 dan satu printer Rp2.000.000. Total nilai seluruh perangkat <b>Rp120.000.000</b>.",
+      persamaan: ["K + P = 30", "5.000.000K + 2.000.000P = 120.000.000"],
+      tanya: "Berapa <b>jumlah komputer</b> di lab tersebut?",
+      jawaban: 20
+    },
+    kanan: {
+      cerita: "Di lab TKJ terdapat <b>24 perangkat</b> (komputer + printer). Harga satu komputer Rp6.000.000 dan satu printer Rp2.000.000. Total nilai seluruh perangkat <b>Rp120.000.000</b>.",
+      persamaan: ["K + P = 24", "6.000.000K + 2.000.000P = 120.000.000"],
+      tanya: "Berapa <b>jumlah printer</b> di lab tersebut?",
+      jawaban: 12
+    }
+  },
+  {
+    topik: "Harga Kabel UTP & Konektor RJ45",
+    kiri: {
+      cerita: "Teknisi membeli <b>5 box kabel UTP</b> dan <b>100 konektor RJ45</b> seharga Rp1.500.000. Pembelian lain: <b>3 box kabel</b> dan <b>50 konektor</b> seharga Rp850.000.",
+      persamaan: ["5B + 100K = 1.500.000", "3B + 50K = 850.000"],
+      tanya: "Berapakah harga <b>satu box kabel UTP</b> (dalam rupiah)?",
+      jawaban: 200000
+    },
+    kanan: {
+      cerita: "Sebuah sekolah membeli <b>4 box kabel UTP</b> dan <b>80 konektor RJ45</b> seharga Rp1.360.000. Pembelian lain: <b>2 box kabel</b> dan <b>50 konektor</b> seharga Rp750.000.",
+      persamaan: ["4B + 80K = 1.360.000", "2B + 50K = 750.000"],
+      tanya: "Berapakah harga <b>satu konektor RJ45</b> (dalam rupiah)?",
+      jawaban: 7000
+    }
+  },
+  {
+    topik: "Ukuran File Transfer Data",
+    kiri: {
+      cerita: "Dua file (A dan B) diunduh dengan total ukuran <b>1500 MB</b>. Ukuran <b>file A</b> adalah <b>dua kali file B dikurangi 300 MB</b>.",
+      persamaan: ["A + B = 1500", "A = 2B − 300"],
+      tanya: "Berapa <b>ukuran file A</b> (dalam MB)?",
+      jawaban: 900
+    },
+    kanan: {
+      cerita: "Dua file (A dan B) diunduh dengan total ukuran <b>2000 MB</b>. Ukuran <b>file A</b> adalah <b>tiga kali file B dikurangi 400 MB</b>.",
+      persamaan: ["A + B = 2000", "A = 3B − 400"],
+      tanya: "Berapa <b>ukuran file B</b> (dalam MB)?",
+      jawaban: 600
+    }
+  }
+];
+
+// ====== STATE GAME ======
+let posisi = 0;          // -5 (kiri menang) s.d +5 (kanan menang)
+let ronde = 0;           // 0..9
+let giliran = 'kiri';    // 'kiri' atau 'kanan'
+let soalIndeks = 0;      // 0..4 (topik)
+let selesai = false;
+
+// ====== FUNGSI ======
+function tampilkanSoal() {
+  const topik = soal[soalIndeks];
+  const data = (giliran === 'kiri') ? topik.kiri : topik.kanan;
+  const namaTim = (giliran === 'kiri') ? 'TIM KIRI 🔴' : 'TIM KANAN 🟢';
+
+  document.getElementById('judulSoal').innerText = `Soal untuk ${namaTim}`;
+  let html = data.cerita + '<br><br><b>Sistem Persamaannya:</b>';
+  data.persamaan.forEach(p => {
+    html += `<div class="equation">${p}</div>`;
+  });
+  html += `<br><b>🎯 ${data.tanya}</b>`;
+  document.getElementById('teksSoal').innerHTML = html;
+
+  document.getElementById('jawaban').value = '';
+  document.getElementById('feedback').style.display = 'none';
+  document.getElementById('giliran').innerText = (giliran === 'kiri') ? 'TIM KIRI 🔴' : 'TIM KANAN 🟢';
+  document.getElementById('soalKe').innerText = ronde + 1;
+
+  // Highlight tim aktif
+  document.getElementById('teamKiri').classList.toggle('active', giliran === 'kiri');
+  document.getElementById('teamKanan').classList.toggle('active', giliran === 'kanan');
+
+  document.getElementById('jawaban').focus();
+}
+
+function updatePosisi() {
+  // Posisi -5 s.d +5 dipetakan ke 0% s.d 100%
+  const persen = ((posisi + 5) / 10) * 100;
+  document.getElementById('flag').style.left = persen + '%';
+  document.getElementById('posisi').innerText = posisi;
+}
+
+function cekJawaban() {
+  if (selesai) return;
+  const input = document.getElementById('jawaban');
+  const jawabanUser = parseFloat(input.value);
+  if (isNaN(jawabanUser)) {
+    alert('Masukkan angka yang valid!');
+    return;
+  }
+
+  const topik = soal[soalIndeks];
+  const data = (giliran === 'kiri') ? topik.kiri : topik.kanan;
+  const benar = Math.abs(jawabanUser - data.jawaban) < 0.01;
+
+  const fb = document.getElementById('feedback');
+  fb.style.display = 'block';
+
+  if (benar) {
+    // Tim yang sedang bermain menarik tali ke arahnya
+    if (giliran === 'kiri') posisi -= 1;
+    else posisi += 1;
+    fb.className = 'feedback correct';
+    fb.innerHTML = `✅ <b>BENAR!</b> Jawaban: ${data.jawaban.toLocaleString('id-ID')}. Tali tertarik ke arah ${giliran === 'kiri' ? 'KIRI 🔴' : 'KANAN 🟢'}!`;
+  } else {
+    // Salah: tali tertarik ke arah lawan
+    if (giliran === 'kiri') posisi += 1;
+    else posisi -= 1;
+    fb.className = 'feedback wrong';
+    fb.innerHTML = `❌ <b>SALAH!</b> Jawaban yang benar: <b>${data.jawaban.toLocaleString('id-ID')}</b>. Tali tertarik ke arah ${giliran === 'kiri' ? 'KANAN 🟢' : 'KIRI 🔴'}!`;
+  }
+
+  updatePosisi();
+  document.getElementById('scoreKiri').innerText = Math.max(0, -posisi);
+  document.getElementById('scoreKanan').innerText = Math.max(0, posisi);
+
+  // Animasi shake
+  document.querySelector('.rope-container').classList.add('shake');
+  setTimeout(() => document.querySelector('.rope-container').classList.remove('shake'), 400);
+
+  // Cek kemenangan
+  if (Math.abs(posisi) >= 5) {
+    setTimeout(akhiriGame, 1500);
+    return;
+  }
+
+  // Lanjut ronde berikutnya
+  setTimeout(() => {
+    ronde++;
+    if (ronde >= 10) {
+      akhiriGame();
+      return;
+    }
+    // Ganti giliran: kiri→kanan→kiri...
+    giliran = (giliran === 'kiri') ? 'kanan' : 'kiri';
+    // Soal indeks berganti setiap 2 ronde (setelah kiri+kanan menjawab topik yang sama)
+    if (giliran === 'kiri') soalIndeks++;
+    tampilkanSoal();
+  }, 2200);
+}
+
+function akhiriGame() {
+  selesai = true;
+  document.getElementById('questionBox').style.display = 'none';
+  const go = document.getElementById('gameOver');
+  go.style.display = 'block';
+
+  let pemenang, detail;
+  if (posisi < 0) {
+    pemenang = '🔴 TIM KIRI MENANG! 🏆';
+    detail = `Tali berhasil ditarik ke sisi kiri sebanyak ${Math.abs(posisi)} langkah.`;
+  } else if (posisi > 0) {
+    pemenang = '🟢 TIM KANAN MENANG! 🏆';
+    detail = `Tali berhasil ditarik ke sisi kanan sebanyak ${posisi} langkah.`;
+  } else {
+    pemenang = '🤝 SERI! 🤝';
+    detail = 'Kedua tim sama kuatnya! Tali tetap di tengah.';
+  }
+  document.getElementById('goWinner').innerText = pemenang;
+  document.getElementById('goDetail').innerText = detail;
+}
+
+function mulaiUlang() {
+  posisi = 0;
+  ronde = 0;
+  giliran = 'kiri';
+  soalIndeks = 0;
+  selesai = false;
+  document.getElementById('gameOver').style.display = 'none';
+  document.getElementById('questionBox').style.display = 'block';
+  document.getElementById('scoreKiri').innerText = '0';
+  document.getElementById('scoreKanan').innerText = '0';
+  updatePosisi();
+  tampilkanSoal();
+}
+
+// Enter untuk submit
+document.getElementById('jawaban').addEventListener('keypress', e => {
+  if (e.key === 'Enter') cekJawaban();
+});
+
+// ====== MULAI ======
+updatePosisi();
+tampilkanSoal();
+</script>
+</body>
+</html>G
