@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Petualangan Berburu Harta Karun Matematika</title>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Baloo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky1:#4fc3f7; --sky2:#b3e5fc; --sun:#ffd23f; --green:#5fbf5a;
+  --orange:#ff8b3d; --red:#ff5d5d; --purple:#8a5cc9; --gold:#ffc93f;
+  --ink:#3a2e1f; --cream:#fff8e7;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Baloo 2',system-ui,sans-serif; color:var(--ink);
+  background:linear-gradient(180deg,var(--sky1) 0%,var(--sky2) 55%,#cdeec9 78%,#a8dd9a 100%);
+  min-height:100vh; overflow-x:hidden;
+}
+h1,h2,h3,.display{font-family:'Luckiest Guy',cursive;letter-spacing:1px}
+
+/* ===== DEKORASI LATAR ===== */
+.sun{position:fixed;top:5%;right:6%;width:92px;height:92px;border-radius:50%;z-index:0;
+  background:radial-gradient(circle at 35% 30%,#fff7ae,var(--sun) 55%,#ffb300);
+  box-shadow:0 0 70px 25px rgba(255,210,63,.55);animation:sunPulse 4s ease-in-out infinite}
+@keyframes sunPulse{50%{box-shadow:0 0 90px 35px rgba(255,210,63,.7)}}
+.cloud{position:fixed;background:#fff;border-radius:50px;height:32px;width:120px;opacity:.9;z-index:0;animation:drift linear infinite}
+.cloud::before,.cloud::after{content:'';position:absolute;background:#fff;border-radius:50%}
+.cloud::before{width:50px;height:50px;top:-24px;left:18px}
+.cloud::after{width:36px;height:36px;top:-16px;right:22px}
+.c1{top:12%;animation-duration:55s}
+.c2{top:22%;transform:scale(.7);animation-duration:75s;animation-delay:-30s}
+.c3{top:6%;transform:scale(1.2);animation-duration:90s;animation-delay:-60s;opacity:.7}
+@keyframes drift{from{left:-20%}to{left:110%}}
+.palm{position:fixed;bottom:-8px;font-size:70px;z-index:0;opacity:.95;filter:drop-shadow(0 6px 4px rgba(0,0,0,.2))}
+.p1{left:2%}.p2{right:3%;transform:scaleX(-1)}
+
+/* ===== LAYOUT ===== */
+#app{position:relative;z-index:2;max-width:1080px;margin:0 auto;padding:18px 14px 60px}
+.screen{display:none}
+.screen.active{display:block;animation:pop .45s ease}
+@keyframes pop{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
+.panel{background:var(--cream);border:4px solid #e8b64c;border-radius:22px;
+  box-shadow:0 10px 0 rgba(140,90,10,.22);padding:20px}
+
+/* ===== TOMBOL ===== */
+.btn{font-family:'Baloo 2';font-weight:800;font-size:1.05rem;color:#fff;border:none;cursor:pointer;
+  padding:13px 26px;border-radius:16px;background:linear-gradient(#ffb259,var(--orange));
+  box-shadow:0 6px 0 #c65f14,0 10px 14px rgba(0,0,0,.2);transition:transform .12s,box-shadow .12s;
+  display:inline-flex;align-items:center;gap:8px}
+.btn:active{transform:translateY(5px);box-shadow:0 1px 0 #c65f14}
+.btn.green{background:linear-gradient(#7ed87a,#3fae4f);box-shadow:0 6px 0 #2b7c37,0 10px 14px rgba(0,0,0,.2)}
+.btn.green:active{box-shadow:0 1px 0 #2b7c37}
+.btn.blue{background:linear-gradient(#6fd0ff,#2aa7d8);box-shadow:0 6px 0 #186f96,0 10px 14px rgba(0,0,0,.2)}
+.btn.blue:active{box-shadow:0 1px 0 #186f96}
+.btn.big{font-size:1.25rem;padding:16px 34px}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+
+/* ===== LAYAR AWAL ===== */
+.start-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:20px;align-items:start}
+@media(max-width:880px){.start-grid{grid-template-columns:1fr}}
+.badge-tag{display:inline-block;background:#fff;border:3px solid var(--gold);border-radius:99px;
+  padding:5px 16px;font-weight:800;color:#b8770a;font-size:.9rem;box-shadow:0 4px 8px rgba(0,0,0,.12)}
+.game-title{font-size:clamp(2.1rem,6.5vw,4rem);line-height:1;color:#fff;margin:14px 0 4px;
+  text-shadow:3px 3px 0 #d1560a,6px 6px 0 rgba(0,0,0,.18)}
+.game-title span{display:block;color:var(--sun);text-shadow:3px 3px 0 #8a5a00,6px 6px 0 rgba(0,0,0,.18)}
+.hero-scene{display:flex;align-items:flex-end;gap:14px;margin:14px 0 18px}
+.name-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.name-row input{flex:1;min-width:200px;padding:13px 16px;font-size:1.05rem;font-family:'Baloo 2';font-weight:700;
+  border:4px solid #e8b64c;border-radius:16px;background:#fff;color:var(--ink)}
+.name-row input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 4px rgba(255,139,61,.3)}
+.rules h3{color:#d1560a;font-size:1.3rem;margin-bottom:8px}
+.rules li{margin:7px 0 7px 4px;list-style:none;padding-left:30px;position:relative;font-weight:600}
+.rules li::before{content:attr(data-i);position:absolute;left:0;top:0}
+.board h3{color:#8a5a00;font-size:1.3rem;margin-bottom:10px}
+.board-row{display:flex;justify-content:space-between;align-items:center;background:#fff;border:2px solid #f0d48a;
+  border-radius:12px;padding:7px 12px;margin-bottom:7px;font-weight:700}
+.board-row .medal{font-size:1.2rem;margin-right:8px}
+.board-row b{color:#d1560a}
+.board-empty{text-align:center;opacity:.65;font-weight:600;padding:10px}
+
+/* ===== KARAKTER KARTUN ===== */
+.heroC{position:relative;width:78px;height:112px;flex-shrink:0;filter:drop-shadow(0 6px 4px rgba(0,0,0,.25));animation:bob 2.2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px)}}
+.hc-hat{position:absolute;top:0;left:50%;transform:translateX(-50%);width:66px;height:16px;background:#8d5a2b;border-radius:50%;z-index:3}
+.hc-hat::before{content:'';position:absolute;left:50%;transform:translateX(-50%);top:-17px;width:42px;height:26px;background:#a06a33;border-radius:20px 20px 6px 6px}
+.hc-hat::after{content:'';position:absolute;left:50%;transform:translateX(-50%);top:-5px;width:42px;height:7px;background:#e2574c;border-radius:4px}
+.hc-head{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:54px;height:50px;background:#ffd9a6;border-radius:46%;z-index:2}
+.hc-eye{position:absolute;top:18px;width:7px;height:10px;background:#33221a;border-radius:50%;animation:blink 4s infinite}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+.hc-eye.l{left:13px}.hc-eye.r{right:13px}
+.hc-mouth{position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:20px;height:10px;border-bottom:4px solid #c05a3a;border-radius:0 0 20px 20px}
+.hc-cheek{position:absolute;bottom:14px;width:8px;height:5px;background:#ffb08a;border-radius:50%}
+.hc-cheek.l{left:6px}.hc-cheek.r{right:6px}
+.hc-body{position:absolute;top:58px;left:50%;transform:translateX(-50%);width:58px;height:40px;background:linear-gradient(#ffab5e,var(--orange));border-radius:16px 16px 8px 8px;z-index:1}
+.hc-body::before{content:'';position:absolute;top:8px;left:50%;transform:translateX(-50%);width:12px;height:12px;background:var(--sun);border-radius:50%;border:2px solid #b8770a}
+.hc-leg{position:absolute;bottom:0;width:16px;height:18px;background:#5b3a1f;border-radius:5px 5px 8px 8px}
+.hc-leg.l{left:18px}.hc-leg.r{right:18px}
+
+/* ===== HUD ===== */
+.hud{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
+  background:rgba(255,255,255,.88);border:3px solid #e8b64c;border-radius:18px;padding:10px 16px;margin-bottom:14px;
+  font-weight:800;box-shadow:0 6px 12px rgba(0,0,0,.12)}
+.hud .chip{background:#fff;border:2px solid #f0d48a;border-radius:12px;padding:4px 12px;font-size:.95rem}
+.hud .hearts{font-size:1.25rem;letter-spacing:2px}
+.hud .score-chip{background:linear-gradient(#fff2a8,var(--gold));border-color:#b8770a;color:#7a4d00}
+.heart-lost{animation:heartPop .4s}
+@keyframes heartPop{50%{transform:scale(1.6)}}
+
+/* ===== PETA ===== */
+.map-wrap{position:relative;width:100%;aspect-ratio:1000/620;border:5px solid #b8770a;border-radius:24px;overflow:hidden;
+  background:
+    radial-gradient(circle at 18% 82%,#ffe9a8 0 15%,transparent 16%),
+    radial-gradient(circle at 50% 55%,#8fd97f 0 26%,transparent 27%),
+    radial-gradient(circle at 72% 40%,#a3e08e 0 20%,transparent 21%),
+    linear-gradient(160deg,#63c8f2,#3fa9e8);
+  box-shadow:0 12px 0 rgba(140,90,10,.25)}
+.map-deco{position:absolute;font-size:clamp(20px,4vw,36px);opacity:.95;pointer-events:none}
+.map-path{position:absolute;inset:0;width:100%;height:100%}
+.map-node{position:absolute;transform:translate(-50%,-50%);width:clamp(56px,11vw,88px);aspect-ratio:1;border-radius:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:clamp(22px,4.5vw,36px);
+  background:#fff;border:4px solid #ccc;box-shadow:0 6px 10px rgba(0,0,0,.25);cursor:default;transition:.3s}
+.map-node .num{position:absolute;top:-9px;right:-9px;width:26px;height:26px;border-radius:50%;background:#fff;
+  border:3px solid currentColor;font-size:.8rem;font-weight:800;display:flex;align-items:center;justify-content:center}
+.map-node.locked{filter:grayscale(1);opacity:.75}
+.map-node.locked::after{content:'🔒';position:absolute;bottom:-6px;right:-6px;font-size:18px}
+.map-node.cleared{border-color:var(--gold);background:#fff8dc}
+.map-node.cleared::after{content:'✅';position:absolute;bottom:-8px;right:-8px;font-size:20px}
+.map-node.current{border-color:var(--orange);cursor:pointer;animation:pulseNode 1.2s ease-in-out infinite}
+.map-node.current:hover{transform:translate(-50%,-50%) scale(1.1)}
+@keyframes pulseNode{50%{box-shadow:0 0 0 14px rgba(255,139,61,.25),0 6px 10px rgba(0,0,0,.25)}}
+.map-hero{position:absolute;transform:translate(-50%,-96%) scale(.62);transition:left 1.1s ease,top 1.1s ease;z-index:5;pointer-events:none}
+.map-info{margin-top:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.map-info .info-txt{flex:1;min-width:230px}
+.map-info h3{font-size:1.5rem;color:#d1560a}
+.map-info p{font-weight:600;opacity:.85}
+.topic-pill{display:inline-block;background:#ffe9c9;border:2px solid var(--orange);color:#b3541e;
+  border-radius:99px;padding:3px 14px;font-weight:800;font-size:.88rem;margin-top:5px}
+
+/* ===== LAYAR SOAL ===== */
+.q-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.q-count{background:#fff;border:3px solid #e8b64c;border-radius:99px;padding:4px 16px;font-weight:800}
+.timer-box{background:#fff;border:3px solid #e8b64c;border-radius:16px;padding:8px 14px;min-width:220px;flex:1;max-width:340px}
+.timer-top{display:flex;justify-content:space-between;font-weight:800;font-size:.9rem;margin-bottom:5px}
+.timer-bar{height:14px;background:#eee;border-radius:99px;overflow:hidden;border:2px solid #d9c07c}
+.timer-fill{height:100%;width:100%;background:linear-gradient(90deg,#7ed87a,#3fae4f);border-radius:99px;transition:width .1s linear}
+.timer-fill.warn{background:linear-gradient(90deg,#ffd23f,#ff9800)}
+.timer-fill.danger{background:linear-gradient(90deg,#ff8a80,#e53935);animation:blinkT .5s steps(2) infinite}
+@keyframes blinkT{50%{opacity:.55}}
+.q-card{text-align:center;padding:26px 20px}
+.q-topic{display:inline-block;color:#fff;border-radius:99px;padding:5px 18px;font-weight:800;font-size:.92rem;
+  box-shadow:0 3px 6px rgba(0,0,0,.2);margin-bottom:14px}
+.q-text{font-size:clamp(1.15rem,3.4vw,1.5rem);font-weight:700;line-height:1.5;margin-bottom:22px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.choices{grid-template-columns:1fr}}
+.choice{background:#fff;border:4px solid #d9c07c;border-radius:16px;padding:15px 12px;font-size:1.1rem;font-weight:800;
+  font-family:'Baloo 2';color:var(--ink);cursor:pointer;transition:.15s;position:relative;text-align:center}
+.choice:hover:not(:disabled){transform:translateY(-3px) scale(1.02);border-color:var(--orange);box-shadow:0 8px 14px rgba(0,0,0,.15)}
+.choice:disabled{cursor:default}
+.choice .key{position:absolute;top:-10px;left:-8px;width:26px;height:26px;background:var(--orange);color:#fff;
+  border-radius:8px;font-size:.8rem;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
+.choice.correct{background:#d9f7d0;border-color:#3fae4f;animation:bounceC .5s}
+.choice.wrong{background:#ffe0e0;border-color:#e53935;animation:shakeX .4s}
+@keyframes bounceC{40%{transform:scale(1.08)}}
+@keyframes shakeX{25%{transform:translateX(-8px)}50%{transform:translateX(7px)}75%{transform:translateX(-4px)}}
+.explain{display:none;margin-top:18px;background:#fff6dd;border:3px dashed #e0a52f;border-radius:16px;padding:16px;text-align:left}
+.explain.show{display:block;animation:pop .35s}
+.explain h4{color:#b8770a;font-size:1.1rem;margin-bottom:6px}
+.explain p{font-weight:600;line-height:1.55}
+.explain .btn{margin-top:12px}
+.q-card.shake{animation:shakeX .45s}
+
+/* ===== PETI HARTA ===== */
+.overlay{position:fixed;inset:0;background:rgba(30,20,5,.75);z-index:100;display:none;align-items:center;justify-content:center;padding:16px}
+.overlay.show{display:flex;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0}}
+.overlay-panel{background:var(--cream);border:5px solid var(--gold);border-radius:26px;padding:30px 26px;
+  max-width:460px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.4);animation:pop .5s}
+.overlay-panel h2{font-size:1.9rem;color:#d1560a;margin-bottom:6px}
+.bigChest{position:relative;width:190px;height:150px;margin:22px auto 8px;perspective:700px}
+.bc-glow{position:absolute;inset:-40px;background:radial-gradient(circle,rgba(255,210,63,.55),transparent 65%);
+  opacity:0;transition:.6s .5s;border-radius:50%}
+.bigChest.open .bc-glow{opacity:1;animation:glowPulse 1.4s ease-in-out infinite}
+@keyframes glowPulse{50%{transform:scale(1.15)}}
+.bc-lid{position:absolute;top:0;left:0;right:0;height:66px;background:linear-gradient(#b5752f,#8a5424);
+  border:5px solid #5d3714;border-radius:26px 26px 8px 8px;transform-origin:bottom center;z-index:3}
+.bc-lid::after{content:'';position:absolute;left:50%;transform:translateX(-50%);top:0;bottom:0;width:22px;background:var(--gold);border:3px solid #b8770a;border-radius:4px}
+.bc-base{position:absolute;bottom:0;left:0;right:0;height:84px;background:linear-gradient(#8a5424,#6e4118);
+  border:5px solid #5d3714;border-radius:8px 8px 18px 18px;z-index:2}
+.bc-base::after{content:'';position:absolute;left:50%;transform:translateX(-50%);top:0;bottom:0;width:22px;background:var(--gold);border:3px solid #b8770a;border-radius:4px}
+.bc-gold{position:absolute;bottom:60px;left:26px;right:26px;height:38px;z-index:2;opacity:0;transition:.5s .5s;
+  background:radial-gradient(circle at 25% 40%,#fff2a8 0 9px,#ffc93f 10px),radial-gradient(circle at 60% 30%,#fff2a8 0 8px,#ffc93f 9px),radial-gradient(circle at 85% 45%,#ffe58a 0 8px,#f0a500 9px),#ffc93f;border-radius:18px}
+.bigChest.open .bc-gold{opacity:1}
+.bigChest.open .bc-lid{transform:rotateX(-118deg);transition:transform .9s cubic-bezier(.34,1.56,.64,1) .25s}
+.bc-lock{position:absolute;top:48px;left:50%;transform:translateX(-50%);width:34px;height:38px;background:var(--gold);
+  border:4px solid #b8770a;border-radius:9px;z-index:5;transition:.4s}
+.bc-lock::before{content:'';position:absolute;top:-14px;left:50%;transform:translateX(-50%);width:18px;height:16px;border:4px solid #b8770a;border-bottom:none;border-radius:10px 10px 0 0}
+.bigChest.open .bc-lock{opacity:0}
+.overlay-panel .btn{margin-top:14px}
+
+/* ===== GAME OVER & MENANG ===== */
+.end-card{max-width:560px;margin:30px auto;text-align:center}
+.end-card .big-emoji{font-size:4.5rem;animation:bob 2s infinite}
+.end-card h2{font-size:2.2rem;color:#fff;text-shadow:2px 2px 0 rgba(0,0,0,.25);margin:8px 0}
+.end-stats{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:16px 0}
+.end-stats div{background:#fff;border:3px solid #e8b64c;border-radius:14px;padding:10px 18px;font-weight:700}
+.end-stats b{display:block;font-size:1.5rem;color:#d1560a}
+
+/* ===== SERTIFIKAT ===== */
+#certificate{background:linear-gradient(#fffdf2,#fdf3d3);border:6px double #b8770a;border-radius:18px;
+  padding:clamp(18px,4vw,36px);max-width:640px;margin:16px auto;position:relative;box-shadow:0 14px 30px rgba(0,0,0,.3)}
+#certificate::before{content:'';position:absolute;inset:8px;border:2px dashed #e0a52f;border-radius:12px;pointer-events:none}
+.cert-title{font-size:clamp(1.4rem,4vw,2.1rem);color:#b8770a;text-align:center}
+.cert-sub{text-align:center;font-weight:600;margin-top:8px}
+.cert-name{text-align:center;font-family:'Luckiest Guy';font-size:clamp(1.8rem,5vw,2.8rem);color:#d1560a;margin:6px 0}
+.cert-desc{text-align:center;font-weight:700;margin-top:6px}
+.cert-stars{text-align:center;font-size:2rem;letter-spacing:6px;margin:10px 0}
+.cert-stats{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin:12px 0}
+.cert-stats>div{background:#fff;border:2px solid #e8b64c;border-radius:12px;padding:8px 16px;text-align:center;font-size:.8rem;font-weight:700;color:#8a6a20}
+.cert-stats b{display:block;font-size:1.15rem;color:#b8770a}
+.cert-foot{display:flex;justify-content:space-between;align-items:flex-end;margin-top:22px;font-weight:700;font-size:.85rem;text-align:center}
+.cert-sign span{display:block;margin-top:26px;border-top:2px solid #8a6a20;padding-top:4px}
+.cert-seal{width:70px;height:70px;border-radius:50%;background:radial-gradient(#ffe58a,var(--gold) 60%,#e09a00);
+  border:3px dashed #b8770a;display:flex;align-items:center;justify-content:center;font-size:1.9rem;color:#8a5a00;
+  box-shadow:0 4px 8px rgba(0,0,0,.25);animation:spinSeal 8s linear infinite}
+@keyframes spinSeal{to{transform:rotate(360deg)}}
+.win-actions{text-align:center;margin:14px 0 24px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+/* ===== EFEK (Koin, +100, Konfeti) ===== */
+#fxLayer{position:fixed;inset:0;pointer-events:none;z-index:999;overflow:hidden}
+.coin{position:absolute;width:26px;height:26px;border-radius:50%;border:2px solid #b87700;
+  background:radial-gradient(circle at 35% 30%,#fff2a8,#ffd23f 45%,#e09a00);
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#8a5a00;
+  box-shadow:0 3px 6px rgba(0,0,0,.3);animation:coinFly 1s cubic-bezier(.2,.6,.4,1) forwards}
+.coin::after{content:'★'}
+@keyframes coinFly{to{transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(.5);opacity:0}}
+.plus100{position:absolute;font-family:'Luckiest Guy';font-size:1.6rem;color:#ffb300;text-shadow:2px 2px 0 #7a4d00;
+  animation:riseUp 1.1s ease-out forwards}
+@keyframes riseUp{to{transform:translateY(-90px);opacity:0}}
+.confetti{position:absolute;top:-24px;width:11px;height:17px;border-radius:3px;animation:fall linear forwards}
+@keyframes fall{to{transform:translate(var(--sw),108vh) rotate(720deg)}}
+
+/* ===== LAIN-LAIN ===== */
+#muteBtn{position:fixed;top:12px;right:12px;z-index:1000;width:48px;height:48px;border-radius:50%;font-size:1.3rem;
+  background:#fff;border:3px solid #e8b64c;cursor:pointer;box-shadow:0 4px 8px rgba(0,0,0,.2);transition:.2s}
+#muteBtn:hover{transform:scale(1.1)}
+@media print{
+  body *{visibility:hidden}
+  #certificate,#certificate *{visibility:visible}
+  #certificate{position:fixed;inset:20px;max-width:none;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Dekorasi latar -->
+<div class="sun"></div>
+<div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div>
+<div class="palm p1">🌴</div><div class="palm p2">🌴</div>
+<button id="muteBtn" title="Suara">🔊</button>
+<div id="fxLayer"></div>
+
+<main id="app">
+
+  <!-- ============ LAYAR AWAL ============ -->
+  <section id="scr-start" class="screen active">
+    <div class="start-grid">
+      <div class="panel">
+        <span class="badge-tag">🎓 Game Edukasi Matematika • SMK Kelas X</span>
+        <h1 class="game-title">Petualangan<br>Buru Harta Karun<span>Matematika</span></h1>
+        <div class="hero-scene">
+          <div class="heroC">
+            <div class="hc-hat"></div>
+            <div class="hc-head">
+              <div class="hc-eye l"></div><div class="hc-eye r"></div>
+              <div class="hc-cheek l"></div><div class="hc-cheek r"></div>
+              <div class="hc-mouth"></div>
+            </div>
+            <div class="hc-body"></div>
+            <div class="hc-leg l"></div><div class="hc-leg r"></div>
+          </div>
+          <div style="font-size:3.4rem">🗺️</div>
+          <div style="font-size:3rem;animation:bob 2.5s infinite">🧰</div>
+        </div>
+        <p style="font-weight:700;margin-bottom:12px">Tulis nama petualangmu, lalu mulai ekspedisi melewati 5 lokasi misterius! Jawab soal untuk membuka peti harta karun. 💰</p>
+        <div class="name-row">
+          <input type="text" id="inpName" maxlength="20" placeholder="Nama petualang..." autocomplete="off">
+          <button class="btn green big" onclick="startGame()">🚀 Mulai Petualangan!</button>
+        </div>
+      </div>
+      <div style="display:grid;gap:16px">
+        <div class="panel rules">
+          <h3>📜 Cara Bermain</h3>
+          <ul>
+            <li data-i="🗺️">Lewati <b>5 level</b> di peta petualangan.</li>
+            <li data-i="✅">Jawaban benar = <b>+100 poin</b> &amp; koin emas!</li>
+            <li data-i="📖">Jawaban salah → kehilangan nyawa + muncul <b>pembahasan</b>.</li>
+            <li data-i="⏱️">Waktu per soal: <b>30 detik</b>.</li>
+            <li data-i="❤️">Nyawa hanya <b>3</b> — habiskan nyawa = petualangan berakhir!</li>
+            <li data-i="🏆">Selesaikan semua level &amp; dapatkan <b>sertifikat</b>!</li>
+          </ul>
+        </div>
+        <div class="panel board">
+          <h3>🏅 Papan Skor Terbaik</h3>
+          <div id="boardStart"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PETA ============ -->
+  <section id="scr-map" class="screen">
+    <div class="hud">
+      <span class="chip">🧭 <span id="hudName1"></span></span>
+      <span class="chip">⭐ Skor: <b id="hudScore1">0</b></span>
+      <span class="chip hearts" id="hudHearts1"></span>
+    </div>
+    <div class="map-wrap" id="mapWrap">
+      <svg class="map-path" viewBox="0 0 1000 620" preserveAspectRatio="none">
+        <path d="M130,471 C190,330 250,250 330,211 C420,270 470,360 520,434 C590,420 650,300 710,174 C790,180 840,290 870,397"
+          fill="none" stroke="#fff" stroke-width="7" stroke-dasharray="16 14" stroke-linecap="round" opacity=".85"/>
+      </svg>
+      <div class="map-deco" style="left:3%;top:8%">🌊</div>
+      <div class="map-deco" style="right:4%;top:6%">🦜</div>
+      <div class="map-deco" style="left:44%;top:6%">⛰️</div>
+      <div class="map-deco" style="left:5%;bottom:6%">🏝️</div>
+      <div class="map-deco" style="right:6%;bottom:8%">🌊</div>
+      <div id="mapNodes"></div>
+      <div class="map-hero" id="mapHero">
+        <div class="heroC">
+          <div class="hc-hat"></div>
+          <div class="hc-head">
+            <div class="hc-eye l"></div><div class="hc-eye r"></div>
+            <div class="hc-cheek l"></div><div class="hc-cheek r"></div>
+            <div class="hc-mouth"></div>
+          </div>
+          <div class="hc-body"></div>
+          <div class="hc-leg l"></div><div class="hc-leg r"></div>
+        </div>
+      </div>
+    </div>
+    <div class="map-info panel" id="mapInfo"></div>
+  </section>
+
+  <!-- ============ LAYAR SOAL ============ -->
+  <section id="scr-level" class="screen">
+    <div class="hud">
+      <span class="chip" id="hudLevelChip"></span>
+      <span class="chip hearts" id="hudHearts2"></span>
+      <span class="chip score-chip">💰 <b id="hudScore2">0</b></span>
+    </div>
+    <div class="timer-box" style="margin-bottom:12px">
+      <div class="timer-top"><span>⏱️ Waktu</span><span id="timerNum">30</span></div>
+      <div class="timer-bar"><div class="timer-fill" id="timerFill"></div></div>
+    </div>
+    <div class="q-card panel" id="qCard">
+      <div class="q-meta">
+        <span class="q-topic" id="qTopic"></span>
+        <span class="q-count" id="qCount"></span>
+      </div>
+      <div class="q-text" id="qText"></div>
+      <div class="choices" id="qChoices"></div>
+      <div class="explain" id="qExplain">
+        <h4 id="exTitle">💡 Pembahasan</h4>
+        <p id="exText"></p>
+        <button class="btn blue" id="exBtn" onclick="afterExplain()">Lanjut ➜</button>
+      </div>
+    </div>
+    <p style="text-align:center;margin-top:10px;color:#fff;font-weight:700;text-shadow:1px 1px 2px rgba(0,0,0,.3)">
+      💡 Tekan tombol keyboard <b>1–4</b> untuk menjawab cepat!
+    </p>
+  </section>
+
+  <!-- ============ GAME OVER ============ -->
+  <section id="scr-over" class="screen">
+    <div class="end-card panel">
+      <div class="big-emoji">🏳️</div>
+      <h2 style="color:#d1560a;text-shadow:none">Petualangan Berakhir!</h2>
+      <p style="font-weight:700">Nyawamu habis, tapi harta karun ilmu tetap milikmu. Coba lagi, pasti bisa! 💪</p>
+      <div class="end-stats">
+        <div>SKOR<b id="overScore">0</b></div>
+        <div>LEVEL TERCAPAI<b id="overLevel">1</b></div>
+        <div>JAWABAN BENAR<b id="overCorrect">0</b></div>
+      </div>
+      <button class="btn green big" onclick="retryGame()">🔄 Coba Lagi</button>
+      <button class="btn blue" onclick="goHome()">🏠 Beranda</button>
+    </div>
+  </section>
+
+  <!-- ============ MENANG + SERTIFIKAT ============ -->
+  <section id="scr-win" class="screen">
+    <h2 style="text-align:center;color:#fff;font-size:2.3rem;text-shadow:2px 2px 0 rgba(0,0,0,.25)">🎉 KAMU MENEMUKAN HARTA KARUN! 🎉</h2>
+    <div id="certificate">
+      <div style="text-align:center;font-size:1.9rem">🗺️ ⚓ 🏆</div>
+      <h2 class="cert-title">Sertifikat Petualang Matematika</h2>
+      <p class="cert-sub">Dengan bangga diberikan kepada</p>
+      <div class="cert-name" id="certName">—</div>
+      <p class="cert-sub">yang telah berhasil menyelesaikan</p>
+      <p class="cert-desc">🏝️ <b>5 Level Petualangan Berburu Harta Karun Matematika</b> 🏝️<br><small>(SMK Kelas X)</small></p>
+      <div class="cert-stars" id="certStars">⭐⭐⭐</div>
+      <div class="cert-stats">
+        <div>SKOR AKHIR<b id="certScore">0</b></div>
+        <div>GELAR<b id="certRank">—</b></div>
+        <div>TANGGAL<b id="certDate">—</b></div>
+      </div>
+      <div class="cert-foot">
+        <div class="cert-sign">Guru Matematika<span>(................................)</span></div>
+        <div class="cert-seal">★</div>
+        <div class="cert-sign">Kepala Sekolah<span>(................................)</span></div>
+      </div>
+    </div>
+    <div class="win-actions no-print">
+      <button class="btn green" onclick="window.print()">🖨️ Cetak Sertifikat</button>
+      <button class="btn blue" onclick="retryGame()">🔄 Main Lagi</button>
+      <button class="btn" onclick="goHome()">🏠 Beranda</button>
+    </div>
+    <div class="panel board" style="max-width:560px;margin:0 auto">
+      <h3>🏅 Papan Skor Terbaik</h3>
+      <div id="boardWin"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ OVERLAY PETI ============ -->
+<div class="overlay" id="chestOverlay">
+  <div class="overlay-panel">
+    <h2 id="chestTitle">Peti Terbuka!</h2>
+    <div class="bigChest" id="bigChest">
+      <div class="bc-glow"></div>
+      <div class="bc-gold"></div>
+      <div class="bc-lid"></div>
+      <div class="bc-base"></div>
+      <div class="bc-lock"></div>
+    </div>
+    <p style="font-weight:800;font-size:1.15rem" id="chestMsg"></p>
+    <button class="btn green big" id="chestBtn" onclick="afterChest()">Lanjut di Peta ➜</button>
+  </div>
+</div>
+
+<script>
+/* ================= DATA SOAL (5 LEVEL) ================= */
+const LEVELS=[
+{name:"Pantai Permulaan",topic:"Persamaan & Pertidaksamaan Linear",emoji:"🏖️",color:"#2aa7d8",questions:[
+ {q:"Penyelesaian dari persamaan <b>2x + 5 = 13</b> adalah ...",choices:["x = 3","x = 4","x = 5","x = 6"],answer:1,
+  explain:"2x + 5 = 13 → 2x = 13 − 5 = 8 → x = 8 ÷ 2 = <b>4</b>."},
+ {q:"Penyelesaian dari <b>3(x − 2) = x + 8</b> adalah ...",choices:["x = 5","x = 6","x = 7","x = 8"],answer:2,
+  explain:"3x − 6 = x + 8 → 3x − x = 8 + 6 → 2x = 14 → x = <b>7</b>."},
+ {q:"Himpunan penyelesaian <b>2x − 3 &lt; 7</b>, untuk x bilangan cacah adalah ...",
+  choices:["{0, 1, 2, 3, 4}","{0, 1, 2, 3, 4, 5}","{1, 2, 3, 4, 5}","{5, 6, 7, ...}"],answer:0,
+  explain:"2x − 3 &lt; 7 → 2x &lt; 10 → x &lt; 5. Bilangan cacah yang memenuhi: <b>{0, 1, 2, 3, 4}</b>."}]},
+{name:"Hutan Eksponen",topic:"Bilangan Berpangkat & Bentuk Akar",emoji:"🌴",color:"#3fae4f",questions:[
+ {q:"Hasil dari <b>2³ × 2⁴</b> adalah ...",choices:["128","256","64","2.048"],answer:0,
+  explain:"Basis sama → pangkat dijumlahkan: 2³⁺⁴ = 2⁷ = <b>128</b>."},
+ {q:"Bentuk sederhana dari <b>5⁶ ÷ 5²</b> adalah ...",choices:["5³","5⁸","5⁴","5¹²"],answer:2,
+  explain:"Basis sama → pangkat dikurangkan: 5⁶⁻² = <b>5⁴</b> (= 625)."},
+ {q:"Bentuk sederhana dari <b>√75</b> adalah ...",choices:["3√5","5√3","2√15","15√5"],answer:1,
+  explain:"√75 = √(25 × 3) = √25 × √3 = <b>5√3</b>."}]},
+{name:"Gua SPLDV",topic:"Sistem Persamaan Linear Dua Variabel",emoji:"🦇",color:"#8a5cc9",questions:[
+ {q:"Diketahui <b>x + y = 7</b> dan <b>x − y = 3</b>. Nilai <b>2x + y</b> adalah ...",choices:["9","10","12","14"],answer:2,
+  explain:"Jumlahkan kedua persamaan: 2x = 10 → x = 5, lalu y = 2. Jadi 2(5) + 2 = <b>12</b>."},
+ {q:"Diketahui <b>2x + y = 8</b> dan <b>x − y = 1</b>. Nilai <b>x × y</b> adalah ...",choices:["4","5","6","8"],answer:2,
+  explain:"Jumlahkan: 3x = 9 → x = 3. Substitusi: 3 − y = 1 → y = 2. Jadi x × y = <b>6</b>."},
+ {q:"Harga <b>2 pensil + 1 buku = Rp8.000</b> dan <b>1 pensil + 1 buku = Rp6.000</b>. Harga 1 pensil adalah ...",
+  choices:["Rp1.500","Rp2.000","Rp3.000","Rp4.000"],answer:1,
+  explain:"Eliminasi: (2p + b) − (p + b) = 8.000 − 6.000 → p = <b>Rp2.000</b>."}]},
+{name:"Gunung Kuadrat",topic:"Persamaan Kuadrat",emoji:"🌋",color:"#e2574c",questions:[
+ {q:"Akar-akar dari <b>x² − 5x + 6 = 0</b> adalah ...",choices:["{2, 3}","{−2, −3}","{1, 6}","{−1, 6}"],answer:0,
+  explain:"Faktorkan: (x − 2)(x − 3) = 0 → x = <b>2 atau 3</b>."},
+ {q:"Akar-akar dari <b>x² + 4x − 5 = 0</b> adalah ...",choices:["{5, −1}","{−5, 1}","{−5, −1}","{5, 1}"],answer:1,
+  explain:"Faktorkan: (x + 5)(x − 1) = 0 → x = <b>−5 atau 1</b>."},
+ {q:"Nilai diskriminan <b>D = b² − 4ac</b> dari <b>x² − 6x + 9 = 0</b> adalah ...",choices:["0","36","72","−36"],answer:0,
+  explain:"a = 1, b = −6, c = 9 → D = (−6)² − 4(1)(9) = 36 − 36 = <b>0</b> (akar kembar)."}]},
+{name:"Kuil Trigonometri",topic:"Perbandingan Trigonometri",emoji:"🏛️",color:"#e0a52f",questions:[
+ {q:"Nilai dari <b>sin 30°</b> adalah ...",choices:["½","½√2","½√3","1"],answer:0,
+  explain:"Ingat tabel sudut istimewa: sin 30° = <b>½</b>."},
+ {q:"Nilai dari <b>tan 45°</b> adalah ...",choices:["0","1","√3","Tidak terdefinisi"],answer:1,
+  explain:"tan 45° = sin 45° ÷ cos 45° = <b>1</b>."},
+ {q:"Nilai dari <b>cos 60° + sin 90°</b> adalah ...",choices:["½","1","3/2","2"],answer:2,
+  explain:"cos 60° = ½ dan sin 90° = 1 → ½ + 1 = <b>3/2</b>."}]}
+];
+const NODE_POS=[{x:13,y:76},{x:33,y:34},{x:52,y:70},{x:71,y:28},{x:87,y:64}];
+const TIME_LIMIT=30, POINTS=100, MAX_LIVES=3, Q_PER_LEVEL=3;
+
+/* ================= SUARA (Web Audio) ================= */
+const SFX={ctx:null,muted:false,
+ ensure(){if(!this.ctx){try{this.ctx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}
+  if(this.ctx&&this.ctx.state==='suspended')this.ctx.resume();},
+ tone(f,dur=.15,type='triangle',vol=.18,delay=0,slide=0){
+  if(this.muted)return;this.ensure();if(!this.ctx)return;
+  const t=this.ctx.currentTime+delay,o=this.ctx.createOscillator(),g=this.ctx.createGain();
+  o.type=type;o.frequency.setValueAtTime(f,t);
+  if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+dur);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.02);
+  g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g);g.connect(this.ctx.destination);o.start(t);o.stop(t+dur+.05);},
+ click(){this.tone(700,.08,'square',.1)},
+ correct(){[523,659,784,1047].forEach((f,i)=>this.tone(f,.13,'triangle',.2,i*.09))},
+ wrong(){this.tone(220,.3,'sawtooth',.14,0,110)},
+ coin(){this.tone(1245,.08,'square',.1);this.tone(1865,.22,'square',.1,.08)},
+ chest(){[392,523,659,784,1047,1319].forEach((f,i)=>this.tone(f,.16,'triangle',.16,i*.1))},
+ tick(){this.tone(1050,.05,'square',.07)},
+ timeup(){this.tone(200,.45,'sawtooth',.16,0,80)},
+ fanfare(){[[523,0],[523,.12],[659,.24],[784,.36],[1047,.52],[784,.72],[1047,.84]].forEach(([f,d])=>this.tone(f,d>=.72?.5:.15,'triangle',.2,d))},
+ lose(){[392,330,262,196].forEach((f,i)=>this.tone(f,.24,'triangle',.16,i*.18))}};
+document.getElementById('muteBtn').onclick=function(){
+  SFX.muted=!SFX.muted;this.textContent=SFX.muted?'🔇':'🔊';if(!SFX.muted)SFX.click();};
+
+/* ================= STATE ================= */
+let S={};
+const byId=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>n.toLocaleString('id-ID');
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  byId(id).classList.add('active');window.scrollTo({top:0});
+}
+function updateHUD(){
+  byId('hudName1').textContent=S.name;
+  byId('hudScore1').textContent=fmt(S.score);
+  byId('hudScore2').textContent=fmt(S.score);
+  const hearts='❤️'.repeat(S.lives)+'🤍'.repeat(MAX_LIVES-S.lives);
+  byId('hudHearts1').innerHTML=hearts;byId('hudHearts2').innerHTML=hearts;
+  byId('hudLevelChip').innerHTML=`${LEVELS[S.level].emoji} Level ${S.level+1}: ${LEVELS[S.level].name}`;
+}
+
+/* ================= SKOR (localStorage) ================= */
+function getScores(){try{return JSON.parse(localStorage.getItem('hartaSkor')||'[]')}catch(e){return[]}}
+function saveScore(){
+  if(S.saved)return;S.saved=true;
+  const list=getScores();
+  list.push({name:S.name,score:S.score,date:new Date().toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})});
+  list.sort((a,b)=>b.score-a.score);
+  localStorage.setItem('hartaSkor',JSON.stringify(list.slice(0,10)));
+}
+function renderBoard(elId){
+  const list=getScores().slice(0,5);const el=byId(elId);
+  if(!list.length){el.innerHTML='<div class="board-empty">Belum ada petualang hebat... jadilah yang pertama! 🌟</div>';return;}
+  const medals=['🥇','🥈','🥉','🎖️','🎖️'];
+  el.innerHTML=list.map((s,i)=>
+   `<div class="board-row"><span><span class="medal">${medals[i]}</span>${esc(s.name)}</span><span><b>${fmt(s.score)}</b> <small>${s.date}</small></span></div>`).join('');
+}
+
+/* ================= ALUR PERMAINAN ================= */
+function startGame(){
+  SFX.ensure();SFX.click();
+  const n=byId('inpName').value.trim()||'Petualang';
+  S={name:n,score:0,lives:MAX_LIVES,level:0,q:0,correct:0,levelCorrect:0,answered:false,saved:false,timer:null};
+  renderMap();showScreen('scr-map');
+}
+function retryGame(){SFX.click();startGame();}
+function goHome(){SFX.click();renderBoard('boardStart');showScreen('scr-start');}
+
+function renderMap(){
+  updateHUD();
+  const wrap=byId('mapNodes');wrap.innerHTML='';
+  LEVELS.forEach((lv,i)=>{
+    const d=document.createElement('div');
+    d.className='map-node '+(i<S.level?'cleared':i===S.level?'current':'locked');
+    d.style.left=NODE_POS[i].x+'%';d.style.top=NODE_POS[i].y+'%';d.style.color=lv.color;
+    d.innerHTML=`<span>${lv.emoji}</span><span class="num">${i+1}</span>`;
+    d.title=lv.name;
+    if(i===S.level)d.onclick=()=>{SFX.click();enterLevel();};
+    wrap.appendChild(d);
+  });
+  const p=NODE_POS[Math.min(S.level,4)];
+  const hero=byId('mapHero');hero.style.left=p.x+'%';hero.style.top=p.y+'%';
+  const lv=LEVELS[S.level];
+  byId('mapInfo').innerHTML=`
+    <div class="info-txt">
+      <h3>${lv.emoji} Level ${S.level+1}: ${lv.name}</h3>
+      <p>Kalahkan ${Q_PER_LEVEL} soal untuk membuka peti harta karun di lokasi ini!</p>
+      <span class="topic-pill">📚 ${lv.topic}</span>
+    </div>
+    <button class="btn green big" onclick="SFX.click();enterLevel()">⚔️ Mulai Tantangan!</button>`;
+}
+
+function enterLevel(){
+  S.q=0;S.levelCorrect=0;
+  showScreen('scr-level');updateHUD();showQuestion();
+}
+
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+
+function showQuestion(){
+  S.answered=false;
+  const lv=LEVELS[S.level],q=lv.questions[S.q];
+  byId('qTopic').textContent=`${lv.emoji} ${lv.topic}`;
+  byId('qTopic').style.background=lv.color;
+  byId('qCount').textContent=`Soal ${S.q+1}/${Q_PER_LEVEL}`;
+  byId('qText').innerHTML=q.q;
+  byId('qExplain').classList.remove('show');
+  const box=byId('qChoices');box.innerHTML='';
+  const items=shuffle(q.choices.map((c,i)=>({c,ok:i===q.answer})));
+  S.currentItems=items;
+  items.forEach((it,i)=>{
+    const b=document.createElement('button');
+    b.className='choice';b.innerHTML=`<span class="key">${i+1}</span>${it.c}`;
+    b.onclick=()=>pick(i);box.appendChild(b);
+  });
+  startTimer();updateHUD();
+}
+
+/* ---- Waktu ---- */
+function startTimer(){
+  clearInterval(S.timer);S.timeLeft=TIME_LIMIT;S.lastWhole=TIME_LIMIT;
+  paintTimer();
+  S.timer=setInterval(()=>{
+    S.timeLeft-=0.1;
+    const w=Math.ceil(S.timeLeft);
+    if(w!==S.lastWhole){S.lastWhole=w;if(w<=5&&w>0)SFX.tick();}
+    if(S.timeLeft<=0){clearInterval(S.timer);onTimeout();}
+    paintTimer();
+  },100);
+}
+function paintTimer(){
+  const pct=Math.max(0,S.timeLeft/TIME_LIMIT*100);
+  const fill=byId('timerFill');fill.style.width=pct+'%';
+  fill.className='timer-fill'+(pct<=25?' danger':pct<=50?' warn':'');
+  byId('timerNum').textContent=Math.max(0,Math.ceil(S.timeLeft))+' dtk';
+}
+
+/* ---- Menjawab ---- */
+function pick(i){
+  if(S.answered)return;S.answered=true;clearInterval(S.timer);
+  const btns=[...byId('qChoices').children];
+  btns.forEach(b=>b.disabled=true);
+  const okIdx=S.currentItems.findIndex(it=>it.ok);
+  if(S.currentItems[i].ok){
+    btns[i].classList.add('correct');
+    S.score+=POINTS;S.correct++;S.levelCorrect++;
+    SFX.correct();setTimeout(()=>SFX.coin(),250);
+    coinBurst(btns[i],12);
+    floatText(btns[i],'+100');
+    updateHUD();
+    setTimeout(nextAfterCorrect,1300);
+  }else{
+    btns[i].classList.add('wrong');btns[okIdx].classList.add('correct');
+    byId('qCard').classList.add('shake');
+    setTimeout(()=>byId('qCard').classList.remove('shake'),500);
+    handleWrong(false);
+  }
+}
+function onTimeout(){
+  if(S.answered)return;S.answered=true;
+  const btns=[...byId('qChoices').children];
+  btns.forEach(b=>b.disabled=true);
+  const okIdx=S.currentItems.findIndex(it=>it.ok);
+  btns[okIdx].classList.add('correct');
+  handleWrong(true);
+}
+function handleWrong(timeout){
+  S.lives--;updateHUD();
+  timeout?SFX.timeup():SFX.wrong();
+  const q=LEVELS[S.level].questions[S.q];
+  byId('exTitle').textContent=timeout?'⏰ Waktu Habis! Pembahasan:':'❌ Kurang Tepat! Pembahasan:';
+  byId('exText').innerHTML=q.explain;
+  byId('exBtn').textContent=S.lives<=0?'Lihat Hasil 😢':(S.q>=Q_PER_LEVEL-1?'Buka Peti 🧰':'Lanjut ➜');
+  byId('qExplain').classList.add('show');
+}
+function nextAfterCorrect(){
+  S.q++;
+  if(S.q>=Q_PER_LEVEL)levelCleared();else showQuestion();
+}
+function afterExplain(){
+  SFX.click();byId('qExplain').classList.remove('show');
+  if(S.lives<=0){gameOver();return;}
+  S.q++;
+  if(S.q>=Q_PER_LEVEL)levelCleared();else showQuestion();
+}
+document.addEventListener('keydown',e=>{
+  if(!byId('scr-level').classList.contains('active'))return;
+  if(!S.answered&&['1','2','3','4'].includes(e.key)){pick(parseInt(e.key)-1);}
+});
+
+/* ---- Peti & level ---- */
+function levelCleared(){
+  clearInterval(S.timer);
+  const lv=LEVELS[S.level];
+  SFX.chest();
+  byId('chestTitle').textContent=`${lv.emoji} Peti ${lv.name} Terbuka!`;
+  const coins=S.levelCorrect*POINTS;
+  byId('chestMsg').innerHTML=`Kamu menjawab <b>${S.levelCorrect}/${Q_PER_LEVEL}</b> soal benar di level ini<br>💰 <b style="color:#b8770a;font-size:1.3rem">+${fmt(coins)} poin</b> masuk ke peti!`;
+  byId('chestBtn').textContent=S.level>=LEVELS.length-1?'👑 Lihat Kemenangan!':'Lanjut di Peta ➜';
+  byId('bigChest').classList.remove('open');
+  byId('chestOverlay').classList.add('show');
+  setTimeout(()=>{
+    byId('bigChest').classList.add('open');
+    const chest=byId('bigChest').getBoundingClientRect();
+    const cx=chest.left+chest.width/2, cy=chest.top+chest.height/2;
+    let n=0;const iv=setInterval(()=>{coinAt(cx,cy);if(++n>14)clearInterval(iv);},70);
+  },400);
+}
+function afterChest(){
+  SFX.click();
+  byId('chestOverlay').classList.remove('show');
+  S.level++;
+  if(S.level>=LEVELS.length)victory();
+  else{renderMap();showScreen('scr-map');}
+}
+
+/* ---- Akhir permainan ---- */
+function gameOver(){
+  clearInterval(S.timer);saveScore();SFX.lose();
+  byId('overScore').textContent=fmt(S.score);
+  byId('overLevel').textContent=S.level+1;
+  byId('overCorrect').textContent=S.correct;
+  showScreen('scr-over');
+}
+function victory(){
+  saveScore();SFX.fanfare();
+  byId('certName').textContent=S.name;
+  byId('certScore').textContent=fmt(S.score);
+  const stars=S.score>=1200?'⭐⭐⭐':S.score>=800?'⭐⭐':'⭐';
+  byId('certStars').textContent=stars;
+  byId('certRank').textContent=S.score>=1200?'Master Matematika':S.score>=800?'Penjelajah Andal':'Petualang Pemberani';
+  byId('certDate').textContent=new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+  renderBoard('boardWin');
+  showScreen('scr-win');
+  confettiRain();
+  setTimeout(()=>{let n=0;const iv=setInterval(()=>{coinAt(innerWidth/2,innerHeight/2);if(++n>20)clearInterval(iv);},60);},500);
+}
+
+/* ================= EFEK VISUAL ================= */
+function coinAt(x,y){
+  const c=document.createElement('div');c.className='coin';
+  c.style.left=x+'px';c.style.top=y+'px';
+  c.style.setProperty('--dx',(Math.random()*220-110)+'px');
+  c.style.setProperty('--dy',(-60-Math.random()*180)+'px');
+  c.style.setProperty('--rot',(Math.random()*720-360)+'deg');
+  byId('fxLayer').appendChild(c);setTimeout(()=>c.remove(),1100);
+}
+function coinBurst(el,n){
+  const r=el.getBoundingClientRect();
+  for(let i=0;i<n;i++)setTimeout(()=>coinAt(r.left+r.width/2,r.top+r.height/2),i*40);
+}
+function floatText(el,txt){
+  const r=el.getBoundingClientRect(),d=document.createElement('div');
+  d.className='plus100';d.textContent=txt;
+  d.style.left=(r.left+r.width/2-30)+'px';d.style.top=(r.top-10)+'px';
+  byId('fxLayer').appendChild(d);setTimeout(()=>d.remove(),1200);
+}
+function confettiRain(){
+  const colors=['#ff5d5d','#ffd23f','#5fbf5a','#2aa7d8','#8a5cc9','#ff8b3d'];
+  for(let i=0;i<90;i++){
+    const c=document.createElement('div');c.className='confetti';
+    c.style.left=Math.random()*100+'vw';
+    c.style.background=colors[Math.floor(Math.random()*colors.length)];
+    c.style.setProperty('--sw',(Math.random()*160-80)+'px');
+    c.style.animationDuration=(2.2+Math.random()*2.5)+'s';
+    c.style.animationDelay=(Math.random()*1.5)+'s';
+    byId('fxLayer').appendChild(c);setTimeout(()=>c.remove(),6000);
+  }
+}
+
+/* ================= INIT ================= */
+renderBoard('boardStart');
+byId('inpName').addEventListener('keydown',e=>{if(e.key==='Enter')startGame();});
+</script>
+</body>
+</html>
